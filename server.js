@@ -15,20 +15,9 @@ const crypto = require('crypto');
 const app = express();
 // middleware/isAuthenticated.js
 
-const isAuthenticated = (req, res, next) => {
-  // Your authentication logic here
-  if (req.isAuthenticated()) {
-    return next();
-  }
 
-  res.redirect('/login'); // Redirect to your login page or handle unauthenticated requests
-};
 
-app.get('/dashboard', isAuthenticated, (req, res) => {
-  const user = req.user; // Assuming the user object is available in req.user after authentication
 
-  res.render('dashboard', { user });
-});
   
   
 // Connect to MongoDB Atlas
@@ -51,7 +40,7 @@ const userSchema = new mongoose.Schema({
     },
     role: {
       type: String,
-      default: 'user', // Default role is set to 'user'; change as needed
+      default: 'admin', // Default role is set to 'user'; change as needed
     },
     isVerified: {
       type: Boolean,
@@ -78,7 +67,7 @@ passport.use(new GoogleStrategy({
     callbackURL: 'http://localhost:3000/auth/google/callback'
   },
   (accessToken, refreshToken, profile, done) => {
-    // Save user profile in your database or perform other actions
+
     const user = {
       
       
@@ -86,12 +75,16 @@ passport.use(new GoogleStrategy({
       emails: profile.emails,
       // Add any other relevant user information
     };
-
+  
     return done(null, user);
   }
-));
+  ));
+    // Save user profile in your database or perform other actions
+   
 
 // Serialize and deserialize user functions
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
 passport.serializeUser((user, done) => done(null, user));
 passport.deserializeUser((obj, done) => done(null, obj));
 
@@ -103,10 +96,48 @@ app.use(passport.session());
 app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
 
-app.get('/auth/google/callback', passport.authenticate('google', { failureRedirect: '/' }), (req, res) => {
-  res.redirect('/upload-letter');
+app.get('/auth/google/callback', passport.authenticate('google', { failureRedirect: '/' }), async (req, res) => {
+  try {
+    // Retrieve user information from the Google profile
+    const { id, displayName, emails } = req.user;
+    const email = emails && emails.length > 0 ? emails[0].value : null;
+
+    // Find the user in the database based on email
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      // If the user is not found, redirect to the upload letter page
+      return res.redirect('/upload-letter');
+    }
+
+    if (!user.isVerified) {
+      // If the user is not verified, display a message and possibly resend the verification email
+      return res.send('Your account is under verification. Check your email for the verification link.');
+    }
+
+    // If the user is verified, redirect to the dashboard
+    res.redirect('/dashboard');
+
+  } catch (error) {
+    console.error('Authentication Callback Error:', error);
+    res.status(500).send('Internal Server Error');
+  }
+  
 });
 
+
+const isAuthenticated = (req, res, next) => {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.redirect('/login');
+};
+
+app.get('/dashboard', isAuthenticated, (req, res) => {
+  const user = req.user; // Assuming the user object is available in req.user after authentication
+
+  res.render('dashboard', { user });
+});
 
 
 
@@ -226,12 +257,17 @@ app.post('/upload-letter', upload.single('letter'), isAuthenticated, async (req,
 
 
 // Verification endpoint
+
+
+// ... (Previous code)
+
+// Verification endpoint
 app.get('/verify-email/:email/:token', async (req, res) => {
   try {
     const email = req.params.email;
     const token = req.params.token;
 
-    // Find the user by username
+    // Find the user by email
     const user = await User.findOne({ email });
 
     if (!user) {
@@ -244,8 +280,32 @@ app.get('/verify-email/:email/:token', async (req, res) => {
       user.isVerified = true;
       user.verificationToken = undefined; // Clear the verification token
       await user.save();
+         
+      // Send the verification success email
+      const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: 'contact.nebulaapparel@gmail.com',
+          pass: 'pgfksxpluzffqifj', // Replace with your Gmail password or an App Password
+        },
+      });
 
-      return res.send('Email verification successful! You can now access the secured content.');
+      const mailOptions = {
+        from: 'contact.nebulaapparel@gmail.com',
+        to: user.email,
+        subject: 'Account Verified Successfully',
+        text: 'Your account has been successfully verified. You can now log in to access your dashboard.',
+      };
+
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          console.error('Error sending email:', error);
+          res.status(500).send('Internal Server Error');
+        } else {
+          console.log('Email sent:', info.response);
+          res.send('Email verification successful! You can now log in.');
+        }
+      });
     } else {
       return res.status(403).send('Invalid verification token');
     }
@@ -255,9 +315,20 @@ app.get('/verify-email/:email/:token', async (req, res) => {
   }
 });
 
+// ... (Remaining code)
 
 
 
+
+
+app.get('/dashboard', (req, res) => {
+  if (req.isAuthenticated()) {
+    const user = req.user;
+    res.render('dashboard', { user });
+  } else {
+    res.redirect('/login');
+  }
+});
 
 
 
