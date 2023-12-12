@@ -225,7 +225,7 @@ app.post('/upload-letter', upload.single('letter'), isAuthenticated, async (req,
     await newUser.save();
 
     // Update the verification link with the token and username
-    const verificationLink = `http://localhost:3000/verify-email/${userEmail}/${verificationToken}`;
+    const verificationLink = `https://nebulaapp.adaptable.app/verify-email/${userEmail}/${verificationToken}`;
 
     const mailOptions = {
       from: 'contact.nebulaapparel@gmail.com',
