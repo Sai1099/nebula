@@ -1,3 +1,4 @@
+require("dotenv").config()
 const express = require('express');
 const mongoose = require('mongoose');
 const passport = require('passport');
@@ -341,7 +342,4 @@ app.get('/dashboard', (req, res) => {
 
 
 // Start the server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
+app.listen(process.env.PORT);
