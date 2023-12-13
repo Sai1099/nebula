@@ -15,13 +15,11 @@ const crypto = require('crypto');
 const app = express();
 // middleware/isAuthenticated.js
 
-
-
-
-  
-  
 // Connect to MongoDB Atlas
-mongoose.connect('mongodb+srv://sai:nebula123@cluster0.l9c5xyp.mongodb.net/test?retryWrites=true&w=majority', { useNewUrlParser: true, useUnifiedTopology: true });
+const mongoDBURI='mongodb+srv://sai:nebula123@cluster0.l9c5xyp.mongodb.net/?retryWrites=true&w=majority'
+mongoose.connect(mongoDBURI, { useNewUrlParser: true, useUnifiedTopology: true });
+
+
 
 // User schema and model
 // Assuming your User model looks something like this
@@ -58,12 +56,15 @@ const userSchema = new mongoose.Schema({
   
 
 // Passport setup
-app.use(session({ secret: '32577272fdc02f1a54465049bb03375bf860acaa4f1166226023b4ca23e9c21', resave: true, saveUninitialized: true }));
+app.use(session({ secret: '0499544725f45b3b3f2a00b498e26bb396cc936e1e3a6cc6dd495a59584cd29b', resave: true, saveUninitialized: true }));
 app.use(passport.initialize());
 app.use(passport.session());
+
+
+
 passport.use(new GoogleStrategy({
-    clientID: '772787922-4une922l7nn5vpdsucq5fj6r9l1m8j5j.apps.googleusercontent.com',
-    clientSecret: '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',
+    clientID: '772787922-vhcqcla66i15hqduocfgb6c9jga9et09.apps.googleusercontent.com',
+    clientSecret: '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',
     callbackURL: 'http://localhost:3000/auth/google/callback'
   },
   (accessToken, refreshToken, profile, done) => {
@@ -91,6 +92,13 @@ passport.deserializeUser((obj, done) => done(null, obj));
 // Use Passport middleware
 app.use(passport.initialize());
 app.use(passport.session());
+
+const isAuthenticated = (req, res, next) => {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.redirect('/login');
+};
 
 // Use the Google OAuth routes
 app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
@@ -126,12 +134,6 @@ app.get('/auth/google/callback', passport.authenticate('google', { failureRedire
 });
 
 
-const isAuthenticated = (req, res, next) => {
-  if (req.isAuthenticated()) {
-    return next();
-  }
-  res.redirect('/login');
-};
 
 app.get('/dashboard', isAuthenticated, (req, res) => {
   const user = req.user; // Assuming the user object is available in req.user after authentication
@@ -146,9 +148,7 @@ app.get('/dashboard', isAuthenticated, (req, res) => {
 // ...
 
 // Express middleware
-app.use(session({ secret: '032577272fdc02f1a54465049bb03375bf860acaa4f1166226023b4ca23e9c21', resave: true, saveUninitialized: true }));
-app.use(passport.initialize());
-app.use(passport.session());
+
 
 // Routes
 
@@ -186,76 +186,75 @@ const upload = multer({ storage: storage });
         res.sendFile(path.join(__dirname, 'verify-letter.html'));
       });
       
-// ...
-app.post('/upload-letter', upload.single('letter'), isAuthenticated, async (req, res) => {
-  try {
-    // Check if the user is authenticated
-    if (!req.isAuthenticated()) {
-      return res.redirect('/');
-    }
-
-    // Fetch user information
-    const user = req.user;
-    const userEmail = user.emails && user.emails.length > 0 ? user.emails[0].value : 'Unknown';
-    const userName = user.username || 'Unknown';
-
-    // Implement your verification logic here
-    const letterPath = req.file.path;
-
-    // Implement logic to send verification email using Nodemailer
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: 'contact.nebulaapparel@gmail.com',
-        pass: 'pgfksxpluzffqifj', // Replace with your Gmail password or an App Password
-      },
-    });
-
-    const verificationToken = crypto.randomBytes(20).toString('hex');
-
-    // Save the verification token to the new user in the database
-    const newUser = new User({
-      username: userName,
-      email: userEmail,
-      isVerified: false, // Set to false by default, update to true after verification
-      verificationToken: verificationToken, // Include the verification token
-    });
-
-    await newUser.save();
-
-    // Update the verification link with the token and username
-    const verificationLink = `http://localhost:3000/verify-email/${userEmail}/${verificationToken}`;
-
-    const mailOptions = {
-      from: 'contact.nebulaapparel@gmail.com',
-      to: 'contact.nebulaapparel@gmail.com',
-      subject: `New Letter Uploaded - ${userName}`,
-      text: `A new letter has been uploaded by ${userName} (${userEmail}). Please verify it by clicking the following link: ${verificationLink}`,
-      attachments: [
-        {
-          filename: req.file.originalname,
-          path: letterPath,
-        },
-      ],
-    };
-
-    // Send the email
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.error('Error sending email:', error);
-        res.status(500).send('Internal Server Error');
-      } else {
-        console.log('Email sent:', info.response);
-        res.send('Letter uploaded successfully! Wait for verification.');
-      }
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Internal Server Error');
-  }
-});
 
 
+      app.post('/upload-letter', upload.single('letter'), isAuthenticated, async (req, res) => {
+        try {
+          // Check if the user is authenticated
+          if (!req.isAuthenticated()) {
+            return res.redirect('/');
+          }
+      
+          // Fetch user information
+          const user = req.user;
+          const userEmail = user.emails && user.emails.length > 0 ? user.emails[0].value : 'Unknown';
+          const userName = user.username || 'Unknown';
+      
+          // Implement your verification logic here
+          const letterPath = req.file.path;
+      
+          // Implement logic to send verification email using Nodemailer
+          const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+              user: 'contact.nebulaapparel@gmail.com',
+              pass: 'pgfksxpluzffqifj', // Replace with your Gmail password or an App Password
+            },
+          });
+      
+          const verificationToken = crypto.randomBytes(20).toString('hex');
+      
+          // Save the verification token to the new user in the database
+          const newUser = new User({
+            username: userName,
+            email: userEmail,
+            isVerified: false, // Set to false by default, update to true after verification
+            verificationToken: verificationToken, // Include the verification token
+          });
+      
+          await newUser.save();
+      
+          // Update the verification link with the token and username
+          const verificationLink = `http://localhost:3000/verify-email/${userEmail}/${verificationToken}`;
+      
+          const mailOptions = {
+            from: 'contact.nebulaapparel@gmail.com',
+            to: 'contact.nebulaapparel@gmail.com',
+            subject: `New Letter Uploaded - ${userName}`,
+            text: `A new letter has been uploaded by ${userName} (${userEmail}). Please verify it by clicking the following link: ${verificationLink}`,
+            attachments: [
+              {
+                filename: req.file.originalname,
+                path: letterPath,
+              },
+            ],
+          };
+      
+          // Send the email
+          transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+              console.error('Error sending email:', error);
+              res.status(500).send('Internal Server Error');
+            } else {
+              console.log('Email sent:', info.response);
+              res.send('Letter uploaded successfully! Wait for verification.');
+            }
+          });
+        } catch (error) {
+          console.error(error);
+          res.status(500).send('Internal Server Error');
+        }
+      });
 // Verification endpoint
 
 
@@ -318,7 +317,9 @@ app.get('/verify-email/:email/:token', async (req, res) => {
 // ... (Remaining code)
 
 
-
+app.get('/csv-import', isAuthenticated, (req, res) => {
+  res.redirect('/csv-importer/upload');
+});
 
 
 app.get('/dashboard', (req, res) => {
@@ -329,16 +330,9 @@ app.get('/dashboard', (req, res) => {
     res.redirect('/login');
   }
 });
-
-
-
-
-
-
-
-
-
-
+const csvImporterRouter = require('./routes/csv_imp'); // Adjust the path based on your project structure
+app.use('/csv-importer', csvImporterRouter);
+ 
 
 // Start the server
 const PORT = process.env.PORT || 3000;

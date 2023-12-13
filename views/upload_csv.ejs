@@ -1,0 +1,25 @@
+<!-- views/upload_csv.ejs -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upload CSV</title>
+</head>
+<body>
+  <h1>Upload CSV</h1>
+
+
+
+
+  <!-- Make sure your form action points to the correct route -->
+<form action="/csv-importer/upload" method="post" enctype="multipart/form-data">
+    <label for="csvFile">Choose CSV file:</label>
+    <input type="file" name="csvFile" id="csvFile" accept=".csv" required>
+    <button type="submit">Upload</button>
+  </form>
+  
+</body>
+</html>

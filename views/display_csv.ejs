@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <meta http-equiv="X-UA-Compatible" content="IE=edge">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>Display CSV</title>
+
+ <script type="text/javascript">
+    function disableBackButton() {
+        window.history.pushState(null, "", window.location.href);
+        window.onpopstate = function () {
+            window.history.pushState(null, "", window.location.href);
+        };
+    }
+ </script>
+</head>
+<body onload="disableBackButton()">
+ <h1>Display CSV Data</h1>
+
+ <% if (successMessage) { %>
+    <p><%= successMessage %></p>
+ <% } %>
+
+ <% if (records && records.length > 0) { %>
+    <h2>Uploaded CSV Data</h2>
+    <table border="1">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>College Name</th>
+          <th>Roll No</th>
+          <th>Phone</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% records.forEach(record => { %>
+          <tr>
+            <td><%= record.name %></td>
+            <td><%= record.collegeName %></td>
+            <td><%= record.rollNo %></td>
+            <td><%= record.phone %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+
+    <form action="/csv-imp/delete-all" method="post">
+      <button type="submit">Delete All</button>
+    </form>
+
+    <form action="/shop" method="get">
+      <button type="submit">Continue to Shop</button>
+    </form>
+ <% } else { %>
+    <p>No records found.</p>
+ <% } %>
+</body>
+</html>
