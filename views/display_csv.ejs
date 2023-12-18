@@ -1,28 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
- <meta charset="UTF-8">
- <meta http-equiv="X-UA-Compatible" content="IE=edge">
- <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <title>Display CSV</title>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Display CSV</title>
 
- <script type="text/javascript">
+  <!-- Include hCaptcha script -->
+  <link rel="stylesheet" href="https://hcaptcha.com/1/api.css" />
+  <script src="https://hcaptcha.com/1/api.js" async defer></script>
+
+  <script type="text/javascript">
     function disableBackButton() {
         window.history.pushState(null, "", window.location.href);
         window.onpopstate = function () {
             window.history.pushState(null, "", window.location.href);
         };
     }
- </script>
+
+    function enableButtons() {
+      // Enable the buttons after hCaptcha verification
+      document.getElementById('deleteAllButton').removeAttribute('disabled');
+      document.getElementById('shopButton').removeAttribute('disabled');
+    }
+  </script>
 </head>
 <body onload="disableBackButton()">
- <h1>Display CSV Data</h1>
+  <h1>Display CSV Data</h1>
 
- <% if (successMessage) { %>
+  <% if (successMessage) { %>
     <p><%= successMessage %></p>
- <% } %>
+  <% } %>
 
- <% if (records && records.length > 0) { %>
+  <% if (records && records.length > 0) { %>
     <h2>Uploaded CSV Data</h2>
     <table border="1">
       <thead>
@@ -45,15 +55,19 @@
       </tbody>
     </table>
 
-    <form action="/csv-imp/delete-all" method="post">
-      <button type="submit">Delete All</button>
+    <!-- Add hCaptcha to the "Delete All" form -->
+    <form action="/csv-importer/delete-all" method="post" data-hcaptcha>
+      <div class="h-captcha" data-sitekey="bff69a4b-86c1-420a-b695-f43a111ec895" data-callback="enableButtons"></div>
+      <button id="deleteAllButton" type="submit" disabled>Delete All</button>
     </form>
 
-    <form action="/shop" method="get">
-      <button type="submit">Continue to Shop</button>
+    <!-- Add hCaptcha to the "Continue" form -->
+    <form action="/shop" method="get" data-hcaptcha>
+      <div class="h-captcha" data-sitekey="bff69a4b-86c1-420a-b695-f43a111ec895" data-callback="enableButtons"></div>
+      <button id="shopButton" type="submit" disabled>Continue to Shop</button>
     </form>
- <% } else { %>
+  <% } else { %>
     <p>No records found.</p>
- <% } %>
+  <% } %>
 </body>
 </html>
