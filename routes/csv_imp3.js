@@ -14,29 +14,9 @@ const TeamSchema = new mongoose.Schema({
   rollNo: String,
   gmail: String,
   phone: String,
-  token: {
-    type: String,
-    default: function () {
-      return generateRandomToken();
-    },
-    unique: true,
-  },
-  isVerified: {
-    type: Boolean,
-    default: false,
-  },
-  acceptanceCode: {
-    type: String,
-    required: true,
-    unique: true,
-    default: function () {
-      return generateRandomAcceptanceCode(10);
-    },
-  },
+  token: String,
+  
 });
-  
-  
-
 
 const Team = mongoose.model('Team', TeamSchema);
 
@@ -46,25 +26,6 @@ let records = [];
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
-function generateRandomToken() {
-  const isVerified = Math.random() < 0.8; // Adjust the verification probability as needed
-  const token = isVerified ? Math.random().toString(36).substring(7) : null;
-  return { isVerified, token };
-}
-
-
-function generateRandomAcceptanceCode(length) {
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let acceptanceCode = '';
-
-  for (let i = 0; i < length; i++) {
-    const randomIndex = Math.floor(Math.random() * characters.length);
-    acceptanceCode += characters.charAt(randomIndex);
-  }
-
-  return acceptanceCode;
-}
-
 
 router.get('/upload', isAuthenticated, (req, res) => {
   res.set('Cache-Control', 'no-store'); // or 'no-cache'
@@ -72,7 +33,7 @@ router.get('/upload', isAuthenticated, (req, res) => {
  });
  
 
- router.post('/upload', isAuthenticated, upload.single('csvFile'), async (req, res) => {
+router.post('/upload', isAuthenticated, upload.single('csvFile'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).send('No file uploaded.');
@@ -88,19 +49,15 @@ router.get('/upload', isAuthenticated, (req, res) => {
     }
 
     // Save records to MongoDB using the Mongoose model (Team)
-    const adminToken = generateRandomToken();
+    await Team.insertMany(records);
 
-    for (const record of records) {
-      const { isVerified, token } = adminToken;
-      record.token = token;
-      record.isVerified = isVerified;
-      await Team.create(record);
-    }
-    //await Team.insertMany(records);
-    req.session.adminToken = records[0].token; 
     // Set a session variable to indicate that the user has uploaded a CSV
     req.session.uploadedCSV = true;
-
+    const adminToken = generateRandomToken();
+    records.forEach(async (record) => {
+      record.token = adminToken;
+      await Team.create(record);
+    });
     // Use 303 See Other status to redirect after POST
     res.redirect(303, '/csv-importer/display');
   } catch (error) {
@@ -110,17 +67,17 @@ router.get('/upload', isAuthenticated, (req, res) => {
 });
 
 
+
 router.get('/display', isAuthenticated, async (req, res) => {
   try {
-    // Fetch all records without using the adminToken
-    const recordsFromDB = await Team.find({});
+    const adminToken = req.session.adminToken;
+    const recordsFromDB = await Team.find({ token: adminToken });
     res.render('display_csv', { records: recordsFromDB, successMessage: '' });
   } catch (error) {
     console.error('Error fetching records:', error);
     res.status(500).send('Internal Server Error');
   }
 });
-
 
 router.post('/delete-all', isAuthenticated, async (req, res) => {
   try {
@@ -130,7 +87,7 @@ router.post('/delete-all', isAuthenticated, async (req, res) => {
 
     // Delete all records from the MongoDB collection using Mongoose
     await Team.deleteMany({});
-    await TeamMember.deleteMany({});
+
     // Redirect to the display page or any other appropriate page
     res.redirect('/display');
   } catch (error) {
