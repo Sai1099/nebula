@@ -3,9 +3,10 @@ const multer = require('multer');
 const csv = require('fast-csv');
 const mongoose = require('mongoose');
 const path = require('path');
+const hCaptcha = require('hcaptcha');
 
 const router = express.Router();
-const app= express()
+const app = express();
 app.set('view engine', 'ejs');
 
 const TeamSchema = new mongoose.Schema({
@@ -66,11 +67,15 @@ function generateRandomAcceptanceCode(length) {
 }
 
 
+// hCaptcha site key and secret key, replace with your own keys
+const hCaptchaSiteKey = 'bff69a4b-86c1-420a-b695-f43a111ec895';
+const hCaptchaSecretKey = 'ES_f4688df581fe4d4e9578bf100f4adc4b';
+
 router.get('/upload', isAuthenticated, (req, res) => {
   res.set('Cache-Control', 'no-store'); // or 'no-cache'
   res.render('upload_csv');
- });
- 
+});
+
 
  router.post('/upload', isAuthenticated, upload.single('csvFile'), async (req, res) => {
   try {
@@ -124,6 +129,19 @@ router.get('/display', isAuthenticated, async (req, res) => {
 
 router.post('/delete-all', isAuthenticated, async (req, res) => {
   try {
+    const token = req.body['h-captcha-response'];
+
+    if (!token) {
+      return res.status(400).send('hCaptcha verification failed.');
+    }
+
+    // Verify hCaptcha token
+    const { success } = await hCaptcha.verify(hCaptchaSecretKey, token);
+
+    if (!success) {
+      return res.status(400).send('hCaptcha verification failed.');
+    }
+
     if (!req.isAuthenticated()) {
       return res.redirect('/login');
     }
@@ -132,7 +150,7 @@ router.post('/delete-all', isAuthenticated, async (req, res) => {
     await Team.deleteMany({});
     await TeamMember.deleteMany({});
     // Redirect to the display page or any other appropriate page
-    res.redirect('/display');
+    res.redirect('/upload');
   } catch (error) {
     console.error('Error deleting all records:', error);
     res.status(500).send('Internal Server Error');
@@ -148,8 +166,11 @@ async function parseCSV(csvString) {
       .on('error', (error) => reject(error));
   });
 }
+<<<<<<< HEAD
 function generateRandomToken() {
   return Math.random().toString(36).substring(7);
 }
+=======
+>>>>>>> fd5134d2afe5f20c3c6df7e36c6f4baf1d93ed8d
 
 module.exports = router;

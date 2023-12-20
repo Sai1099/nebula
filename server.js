@@ -317,7 +317,7 @@ app.get('/verify-email/:email/:token', async (req, res) => {
 // ... (Remaining code)
 
 
-app.get('/csv-import', isAuthenticated, (req, res) => {
+app.get('/csv-importer', isAuthenticated, (req, res) => {
   res.redirect('/csv-importer/upload');
 });
 
