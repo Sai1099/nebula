@@ -143,3 +143,117 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
+
+
+
+
+
+
+
+
+
+app.post('/verify-and-fetch', async (req, res) => {
+  try {
+    // Check if the request is authenticated
+    if (!req.isAuthenticated()) {
+      return res.status(401).send('Unauthorized');
+    }
+
+    // Get the acceptance code from the request body
+    const acceptanceCode = req.body.acceptanceCode;
+
+    if (!acceptanceCode) {
+      return res.json({ success: false, message: 'Acceptance code is required.' });
+    }
+
+    // Assuming you store the user's Gmail in the profile
+    const teamMember = await TeamMember.findOne({ gmail: req.user.gmail, acceptanceCode: acceptanceCode, isVerified: true });
+
+    if (teamMember) {
+      res.json({ success: true, teamMember });
+    } else {
+      // Check if the team member with the given Gmail exists in the database
+      const userExists = await TeamMember.findOne({ gmail: req.user.gmail });
+
+      if (!userExists) {
+        return res.json({ success: false, message: 'User not found.' });
+      }
+
+      res.json({ success: false, message: 'Verification failed.' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+app.post('/verify-and-fetch', async (req, res) => {
+  try {
+    const userEmail = req.user.gmail;
+
+    // Find the teamData based on the user's Gmail and isVerified condition
+    const teamData = await Team.findOne({
+      gmail: userEmail,
+      isVerified: true,
+    });
+
+    if (teamData) {
+      const acceptanceCode = teamData.acceptanceCode;
+
+      // If teamData is found, fetch corresponding team_user data
+      const teamUserData = await User.findOne({
+        gmail: userEmail,
+        // Add more conditions if needed
+      });
+
+      if (teamUserData) {
+        res.json({
+          success: true,
+          teamData,
+          teamUserData,
+          acceptanceCode,
+        });
+      } else {
+        res.json({
+          success: false,
+          message: 'User not found in team_user collection.',
+        });
+      }
+    } else {
+      res.json({
+        success: false,
+        message: 'User not found in Team collection or is not verified.',
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Internal Server Error');
+  }
+});

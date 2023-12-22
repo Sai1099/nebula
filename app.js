@@ -1,10 +1,15 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const passport = require('passport');
+
+
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const session = require('express-session');
 const path = require('path');
 const app = express();
+const Team = require('../verificationnebula/models/Team.js');
+const TeamMember = require('../verificationnebula/models/TeamMember'); // Adjust the path accordingly
+const User = require('../verificationnebula/models/team_users.js');
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 // MongoDB connection
@@ -13,13 +18,11 @@ mongoose.connect('mongodb+srv://sai:nebula123@cluster0.l9c5xyp.mongodb.net/?retr
   useUnifiedTopology: true,
 });
 
+
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'ejs');
 // User schema
-const userSchema = new mongoose.Schema({
-  googleId: String,
-  displayName: String,
-  gmail: String,
-});
-const User = mongoose.model('User', userSchema, 'team_users');
+
 
 
 // Passport configuration
@@ -102,62 +105,94 @@ app.get('/profile', (req, res) => {
 });
 
 
-const teamMemberSchema = new mongoose.Schema({
-    // Define the fields for a team member
-    name: String,
-  collegeName: String,
-  rollNo: String,
-  gmail: String,
-  phone: String,
-  token: String,
-  isVerified: Boolean, // Added isVerified field
-  acceptanceCode: String,
-    // ...
-  });
-  
-  const TeamMember = mongoose.model('TeamMember', teamMemberSchema, 'teams'); // 'Team' is the collection name
-  
+
   app.get('/verify-and-fetch', (req, res) => {
     const filePath = path.join(__dirname, 'verify-and-fetch.html');
     res.sendFile(filePath);
   });
   
-
   app.post('/verify-and-fetch', async (req, res) => {
     try {
-      // Check if the request is authenticated
-      if (!req.isAuthenticated()) {
-        return res.status(401).send('Unauthorized');
-      }
+      const userEmail = req.user.gmail;
+      const writtenAcceptanceCode = req.body.acceptanceCode;
   
-      // Get the acceptance code from the request body
-      const acceptanceCode = req.body.acceptanceCode;
+      // Find the teamData based on the user's Gmail and isVerified condition
+      const teamData = await Team.findOne({
+        gmail: userEmail,
+        isVerified: true,
+      });
   
-      if (!acceptanceCode) {
-        return res.json({ success: false, message: 'Acceptance code is required.' });
-      }
+      if (teamData) {
+        const storedAcceptanceCode = teamData.acceptanceCode;
   
-      // Assuming you store the user's Gmail in the profile
-      const teamMember = await TeamMember.findOne({ gmail: req.user.gmail, acceptanceCode: acceptanceCode, isVerified: true });
+        if (writtenAcceptanceCode === storedAcceptanceCode) {
+          // If teamData is found, fetch or create corresponding team_user data
+          let teamUserData = await User.findOne({
+            gmail: userEmail,
+          });
   
-      if (teamMember) {
-        res.json({ success: true, teamMember });
-      } else {
-        // Check if the team member with the given Gmail exists in the database
-        const userExists = await TeamMember.findOne({ gmail: req.user.gmail });
+          // If teamUserData not found, create a new record
+          if (!teamUserData) {
+            teamUserData = await User.create({
+              gmail: userEmail,
+              acceptanceCode: storedAcceptanceCode,
+              // Add other fields as needed
+            });
+          } else {
+            // Update the acceptance code in team_users collection
+            teamUserData.acceptanceCode = storedAcceptanceCode;
+            await teamUserData.save();
+          }
   
-        if (!userExists) {
-          return res.json({ success: false, message: 'User not found.' });
+          res.json({
+            success: true,
+            teamData,
+            teamUserData,
+            acceptanceCode: storedAcceptanceCode,
+          });
+        } else {
+          res.json({
+            success: false,
+            message: 'Acceptance code does not match.',
+          });
         }
-  
-        res.json({ success: false, message: 'Verification failed.' });
+      } else {
+        res.json({
+          success: false,
+          message: 'User not found in Team collection or is not verified.',
+        });
       }
     } catch (error) {
       console.error(error);
       res.status(500).send('Internal Server Error');
     }
   });
-
+  
+  
+  app.get('/dashboard', async (req, res) => {
+    try {
+      const userEmail = req.user.gmail;
+  
+      // Check if the user has an acceptance code in team_users collection
+      const teamUserData = await User.findOne({
+        gmail: userEmail,
+        acceptanceCode: { $exists: true, $ne: null },
+      });
+  
+      if (teamUserData) {
+        // Redirect to the dashboard if the acceptance code is present
+        res.render('dashboard', { user: req.user, teamUserData }); // Adjust this line based on your rendering logic
+      } else {
+        // Redirect to the verify-and-fetch page if the acceptance code is not present
+        res.redirect('/verify-and-fetch');
+      }
+    } catch (error) {
+      console.error(error);
+      res.status(500).send('Internal Server Error');
+    }
+  
+  });
+  
 
 app.get('/logout', (req, res) => {
     req.logout();
@@ -167,3 +202,5 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
+module.exports = app;
