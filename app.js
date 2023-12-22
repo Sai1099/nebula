@@ -2,7 +2,8 @@ const express = require('express');
 const mongoose = require('mongoose');
 const passport = require('passport');
 
-
+const csrf = require('csurf');
+const csrfProtection = csrf({ cookie: true });
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const session = require('express-session');
 const path = require('path');
@@ -10,6 +11,7 @@ const app = express();
 const Team = require('../verificationnebula/models/Team.js');
 const TeamMember = require('../verificationnebula/models/TeamMember'); // Adjust the path accordingly
 const User = require('../verificationnebula/models/team_users.js');
+const isAuthenticated = require('../verificationnebula/middleware/isAuthenticated.js');
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 // MongoDB connection
@@ -22,7 +24,12 @@ mongoose.connect('mongodb+srv://sai:nebula123@cluster0.l9c5xyp.mongodb.net/?retr
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 // User schema
+app.use(csrfProtection);
 
+app.use((req, res, next) => {
+  res.locals.csrfToken = req.csrfToken();
+  next();
+});
 
 
 // Passport configuration
@@ -96,15 +103,17 @@ app.get(
   }
 );
 
-app.get('/profile', (req, res) => {
-  if (req.isAuthenticated()) {
-    res.send(`<h1>Hello, ${req.user.displayName}</h1><p>Your Gmail ID: ${req.user.gmail}</p><a href="/logout">Logout</a>`);
-  } else {
-    res.redirect('/');
-  }
+
+
+app.get('/profile-update', (req, res) => {
+  // You can set errorMessage based on some condition or fetch it from the request
+  const errorMessage = 'An error occurred during profile update.';
+  
+  // Render the profile-update.ejs file with the errorMessage
+  res.render('profile-update', {
+    errorMessage: errorMessage
+  });
 });
-
-
 
   app.get('/verify-and-fetch', (req, res) => {
     const filePath = path.join(__dirname, 'verify-and-fetch.html');
@@ -192,6 +201,70 @@ app.get('/profile', (req, res) => {
     }
   
   });
+  
+  
+  app.get('/profile', isAuthenticated, async (req, res) => {
+    try {
+      // Fetch the team details for the logged-in user
+      const teamDetails = await Team.findOne({ gmail: req.user.gmail });
+  
+      if (!teamDetails) {
+        return res.status(404).send('Team not found.');
+      }
+      const successMessage = 'Profile updated successfully!';
+      // Render the profile view with existing details
+      res.render('profile', { teamDetails, successMessage });
+    } catch (error) {
+      console.error('Error fetching team details:', error);
+      res.status(500).send('Internal Server Error');
+    }
+  });
+  
+  app.post('/profile/update', isAuthenticated, async (req, res) => {
+    try {
+      const userEmail = req.user.email;
+  
+      // Update the team details based on the form data
+      const updateFields = {
+        profilePic: req.body.profilePic,
+        instagramBio: req.body.instagramBio,
+        bio: req.body.bio,
+        customFields: req.body.customFields,
+        // Add other fields as needed
+      };
+  
+      // Update the team details in the teams collection
+      const updatedTeam = await Team.findOneAndUpdate(
+        { gmail: userEmail },
+        { $set: updateFields },
+        { new: true }
+      );
+  
+      if (!updatedTeam) {
+        return res.status(404).send('Team not found.');
+      }
+  
+      // Redirect to the profile page with a success message
+      res.redirect('/profile?success=Profile updated successfully');
+    } catch (error) {
+      console.error('Error updating team profile:', error);
+      res.status(500).send('Internal Server Error');
+    }
+  });
+  
+  
+ 
+  
+
+
+
+
+
+
+
+ 
+  
+  
   
 
 app.get('/logout', (req, res) => {

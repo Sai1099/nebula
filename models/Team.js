@@ -6,6 +6,10 @@ const teamSchema = new mongoose.Schema({
   rollNo: String,
   gmail: String,
   phone: String,
+  profilePic: String, // Add profile picture field
+  instagramBio: String,
+  bio: String,
+  customFields: { type: Map, of: String },
   token: {
     type: String,
     default: function () {

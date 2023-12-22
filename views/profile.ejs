@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Team Profile</title>
+  <!-- Add your CSS styles here or link to an external stylesheet -->
+  <style>
+    /* Add your custom styles here */
+    body {
+      font-family: Arial, sans-serif;
+    }
+    /* You can customize the styles further based on your design requirements */
+  </style>
+</head>
+<body>
+  <h1>Team Profile</h1>
+
+  <% if (successMessage) { %>
+    <p><%= successMessage %></p>
+  <% } %>
+
+  <div>
+    <strong>Profile Picture:</strong> <%= teamDetails.profilePic || 'Not provided' %>
+  </div>
+  <div>
+    <strong>Instagram Bio:</strong> <%= teamDetails.instagramBio || 'Not provided' %>
+  </div>
+  <div>
+    <strong>Bio:</strong> <%= teamDetails.bio || 'Not provided' %>
+  </div>
+  <div>
+    <strong>Custom Fields:</strong> <%= teamDetails.customFields || 'Not provided' %>
+  </div>
+
+  <!-- Add "Update" button -->
+  <form action="/profile-update" method="get">
+    <button type="submit">Update Profile</button>
+  </form>
+
+  <!-- Add other details as needed -->
+
+  <!-- Add your navigation or other elements here -->
+
+</body>
+</html>

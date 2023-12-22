@@ -1,0 +1,38 @@
+<!-- views/display.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Add your head content -->
+  <title>Display Team Data</title>
+</head>
+<body>
+  <h1>Team Data</h1>
+
+  <% if (teamRecords && teamRecords.length > 0) { %>
+    <table border="1">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>College Name</th>
+          <th>Roll No</th>
+          <th>Gmail</th>
+          <!-- Add other fields as needed -->
+        </tr>
+      </thead>
+      <tbody>
+        <% teamRecords.forEach(record => { %>
+          <tr>
+            <td><%= record.name %></td>
+            <td><%= record.collegeName %></td>
+            <td><%= record.rollNo %></td>
+            <td><%= record.gmail %></td>
+            <!-- Add other fields as needed -->
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } else { %>
+    <p>No team records found.</p>
+  <% } %>
+</body>
+</html>

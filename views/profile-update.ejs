@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Update Team Profile</title>
+  <!-- Add your CSS styles here or link to an external stylesheet -->
+  <style>
+    /* Add your custom styles here */
+    body {
+      font-family: Arial, sans-serif;
+    }
+    /* You can customize the styles further based on your design requirements */
+  </style>
+</head>
+<body>
+  <h1>Update Team Profile</h1>
+
+  <% if (errorMessage) { %>
+    <p style="color: red;"><%= errorMessage %></p>
+  <% } %>
+
+  <form action="/profile/update" method="post">
+    <!-- Include CSRF token if using CSRF protection -->
+    <!-- <input type="hidden" name="_csrf" value="<%= csrfToken %>"> -->
+
+    <!-- Add your form fields here -->
+    <label for="profilePic">Profile Picture:</label>
+    <input type="text" id="profilePic" name="profilePic" value="<%= teamDetails.profilePic || '' %>">
+
+    <label for="instagramBio">Instagram Bio:</label>
+    <input type="text" id="instagramBio" name="instagramBio" value="<%= teamDetails.instagramBio || '' %>">
+
+    <label for="bio">Bio:</label>
+    <input type="text" id="bio" name="bio" value="<%= teamDetails.bio || '' %>">
+
+    <label for="customFields">Custom Fields:</label>
+    <input type="text" id="customFields" name="customFields" value="<%= teamDetails.customFields || '' %>">
+
+    <!-- Add other form fields as needed -->
+
+    <button type="submit">Update Profile</button>
+  </form>
+
+  <!-- Add your navigation or other elements here -->
+
+</body>
+</html>
+
