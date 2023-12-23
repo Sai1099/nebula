@@ -6,6 +6,7 @@ const session = require('express-session');
 const nodemailer = require('nodemailer');
 const multer = require('multer');
 const path = require('path');
+const User = require('../models/User.js');
 
 const fs = require('fs');
 const crypto = require('crypto');
@@ -23,36 +24,7 @@ mongoose.connect(mongoDBURI, { useNewUrlParser: true, useUnifiedTopology: true }
 
 // User schema and model
 // Assuming your User model looks something like this
-const userSchema = new mongoose.Schema({
-  
 
-    username: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-    role: {
-      type: String,
-      default: 'admin', // Default role is set to 'user'; change as needed
-    },
-    isVerified: {
-      type: Boolean,
-      default: false,
-    },
-    verificationToken: {
-      type: String, // Change the type accordingly based on your token generation method
-    },
-  });
-  
-  
-  const User = mongoose.model('User', userSchema);
-  // In your route/controller where you fetch the user
- 
   
 
 // Passport setup

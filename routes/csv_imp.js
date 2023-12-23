@@ -5,9 +5,10 @@ const mongoose = require('mongoose');
 const path = require('path');
 const nodemailer = require('nodemailer'); 
 const hCaptcha = require('hcaptcha');
-const Team = require('../verificationnebula/models/Team.js');
+
 const router = express.Router();
 const app = express();
+const Team = require('../models/Team.js');
 app.set('view engine', 'ejs');
 
 const isAuthenticated = require(path.join(__dirname, '..', 'middleware', 'isAuthenticated'));
