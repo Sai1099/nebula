@@ -17,10 +17,6 @@ const crypto = require('crypto');
 
 const app = express();
 // middleware/isAuthenticated.js
-
-app.set('trust proxy', true);
-
-
 app.use(bodyParser.json());
 app.use('/api/payment', paymentRoutes);
 // Connect to MongoDB Atlas
@@ -200,7 +196,7 @@ const upload = multer({ storage: storage });
           await newUser.save();
       
           // Update the verification link with the token and username
-          const verificationLink = `http://localhost:3000/verify-email/${userEmail}/${verificationToken}`;
+          const verificationLink = `http://nebula-app.adaptable.app/verify-email/${userEmail}/${verificationToken}`;
       
           const mailOptions = {
             from: 'contact.nebulaapparel@gmail.com',
