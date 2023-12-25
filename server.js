@@ -14,6 +14,8 @@ const fs = require('fs');
 const crypto = require('crypto');
 // Assuming you have a middleware for authentication
 // Assuming you have a middleware for handling file uploads
+// require and configure dotenv, will load vars in .env in PROCESS.ENV
+require('dotenv').config();
 
 const app = express();
 // middleware/isAuthenticated.js
@@ -68,7 +70,7 @@ const isAuthenticated = (req, res, next) => {
   if (req.isAuthenticated()) {
     return next();
   }
-  res.redirect('/login');
+  res.redirect('/auth/google');
 };
 
 // Use the Google OAuth routes

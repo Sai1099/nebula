@@ -31,3 +31,4 @@ const userSchema = new mongoose.Schema({
   const User = mongoose.model('User', userSchema);
   // In your route/controller where you fetch the user
  
+  module.exports = User;
