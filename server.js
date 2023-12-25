@@ -23,10 +23,6 @@ const mongoDBURI='mongodb+srv://sai:nebula123@cluster0.l9c5xyp.mongodb.net/?retr
 mongoose.connect(mongoDBURI, { useNewUrlParser: true, useUnifiedTopology: true });
 
 
-
-// User schema and model
-// Assuming your User model looks something like this
-
   
 
 // Passport setup
