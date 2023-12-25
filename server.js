@@ -7,6 +7,7 @@ const nodemailer = require('nodemailer');
 const multer = require('multer');
 const path = require('path');
 const User = require('../models/User.js');
+const paymentRoutes = require('./routes/payment');
 
 const fs = require('fs');
 const crypto = require('crypto');
@@ -15,7 +16,8 @@ const crypto = require('crypto');
 
 const app = express();
 // middleware/isAuthenticated.js
-
+app.use(bodyParser.json());
+app.use('/api/payment', paymentRoutes);
 // Connect to MongoDB Atlas
 const mongoDBURI='mongodb+srv://sai:nebula123@cluster0.l9c5xyp.mongodb.net/?retryWrites=true&w=majority'
 mongoose.connect(mongoDBURI, { useNewUrlParser: true, useUnifiedTopology: true });
