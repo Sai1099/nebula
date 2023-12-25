@@ -74,41 +74,36 @@ const isAuthenticated = (req, res, next) => {
 // Use the Google OAuth routes
 app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
-
-app.get('/auth/google/callback', passport.authenticate('google', { failureRedirect: '/' }), async (req, res) => {
-  try {
-    // Retrieve user information from the Google profile
+app.get(
+  '/auth/google/callback',
+  passport.authenticate('google', { failureRedirect: '/' }),
+  (req, res) => {
+    // Authentication successful, now redirect based on verification status
     const { id, displayName, emails } = req.user;
     const email = emails && emails.length > 0 ? emails[0].value : null;
 
-    // Find the user in the database based on email
-    const user = await User.findOne({ email });
+    User.findOne({ email }, (err, user) => {
+      if (err) {
+        console.error('Database Error:', err);
+        return res.status(500).send('Internal Server Error');
+      }
 
-    if (!user) {
-      // If the user is not found, redirect to the upload letter page
-      return res.redirect('/upload-letter');
-    }
+      if (!user) {
+        return res.redirect('/upload-letter');
+      }
 
-    if (!user.isVerified) {
-      // If the user is not verified, display a message and possibly resend the verification email
-      return res.send('Your account is under verification. Check your email for the verification link.');
-    }
+      if (!user.isVerified) {
+        return res.send('Your account is under verification. Check your email for the verification link.');
+      }
 
-    // If the user is verified, redirect to the dashboard
-    res.redirect('/dashboard');
-
-  } catch (error) {
-    console.error('Authentication Callback Error:', error);
-    res.status(500).send('Internal Server Error');
+      res.redirect('/dashboard');
+    });
   }
-  
-});
+);
 
-
-
+// Dashboard route
 app.get('/dashboard', isAuthenticated, (req, res) => {
-  const user = req.user; // Assuming the user object is available in req.user after authentication
-
+  const user = req.user;
   res.render('dashboard', { user });
 });
 
