@@ -17,6 +17,10 @@ const crypto = require('crypto');
 
 const app = express();
 // middleware/isAuthenticated.js
+
+app.set('trust proxy', true);
+
+
 app.use(bodyParser.json());
 app.use('/api/payment', paymentRoutes);
 // Connect to MongoDB Atlas
