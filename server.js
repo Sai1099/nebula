@@ -36,7 +36,7 @@ app.use(passport.session());
 passport.use(new GoogleStrategy({
     clientID: '772787922-vhcqcla66i15hqduocfgb6c9jga9et09.apps.googleusercontent.com',
     clientSecret: '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',
-    callbackURL: 'http://localhost:3000/auth/google/callback'
+    callbackURL: 'https://nebula-app.adaptable.app/auth/google/callback'
   },
   (accessToken, refreshToken, profile, done) => {
 
