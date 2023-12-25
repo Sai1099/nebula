@@ -5,8 +5,9 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const session = require('express-session');
 const nodemailer = require('nodemailer');
 const multer = require('multer');
+const bodyParser = require('body-parser');  // Add this line
 const path = require('path');
-const User = require('../models/User.js');
+const User = require('./models/User.js');
 const paymentRoutes = require('./routes/payment');
 
 const fs = require('fs');
