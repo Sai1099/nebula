@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const userSchema = new mongoose.Schema({
   
 
@@ -25,6 +26,6 @@ const userSchema = new mongoose.Schema({
   });
   
   
-  const User = mongoose.model('User', userSchema);
+  const User = mongoose.model('users', userSchema);
   // In your route/controller where you fetch the user
- 
+  module.exports = User;

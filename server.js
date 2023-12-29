@@ -6,9 +6,9 @@ const session = require('express-session');
 const nodemailer = require('nodemailer');
 const multer = require('multer');
 const path = require('path');
-const User = require('../models/User.js');
+const User = require('./models/User.js');
 const paymentRoutes = require('./routes/payment');
-
+const bodyParser = require('body-parser');
 const fs = require('fs');
 const crypto = require('crypto');
 // Assuming you have a middleware for authentication
