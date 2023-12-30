@@ -309,7 +309,7 @@ app.get('/dashboard', (req, res) => {
     const user = req.user;
     res.render('dashboard', { user });
   } else {
-    res.redirect('/login');
+    res.status(404).render('404'); 
   }
 });
 const csvImporterRouter = require('./routes/csv_imp'); // Adjust the path based on your project structure

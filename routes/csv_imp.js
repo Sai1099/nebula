@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const multer = require('multer');
 const csv = require('fast-csv');
@@ -5,7 +6,6 @@ const mongoose = require('mongoose');
 const path = require('path');
 const nodemailer = require('nodemailer'); 
 const hCaptcha = require('hcaptcha');
-
 const router = express.Router();
 const app = express();
 const Team = require('../models/Team.js');
@@ -37,8 +37,8 @@ function generateRandomAcceptanceCode(length) {
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: 'contact.nebulaapparel@gmail.com',
-          pass: 'pgfksxpluzffqifj',
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_PASSWORD
   },
 });
 
@@ -54,8 +54,8 @@ function generateRandomTokenAndAcceptanceCode() {
 
 
 // hCaptcha site key and secret key, replace with your own keys
-const hCaptchaSiteKey = 'bff69a4b-86c1-420a-b695-f43a111ec895';
-const hCaptchaSecretKey = 'ES_f4688df581fe4d4e9578bf100f4adc4b';
+const hCaptchaSiteKey = process.env.HCAPTCHA_SITE_KEY;
+const hCaptchaSecretKey = process.env.HCAPTCHA_SECRET_KEY;
 
 router.get('/upload', isAuthenticated, (req, res) => {
   res.set('Cache-Control', 'no-store'); // or 'no-cache'
@@ -125,7 +125,7 @@ router.get('/upload', isAuthenticated, (req, res) => {
 });
 function sendEmailToTeamMember(email, acceptanceCode) {
   const mailOptions = {
-    from: 'contact.nebulaapparel@gmail.com',
+    from: process.env.GMAIL_USER,
     to: email,
     subject: 'Acceptance Code Information',
     text: `Dear Team Member,\n\nYour acceptance code is: ${acceptanceCode}\n\nBest regards,\nThe Nebula Apparel Team`,
@@ -146,7 +146,7 @@ function sendEmailToTeamMember(email, acceptanceCode) {
 
 function sendEmailToAdmin(adminEmail, adminToken) {
   const mailOptions = {
-    from: 'contact.nebulaapparel@gmail.com',
+    from: process.env.GMAIL_USER,
     to: adminEmail,
     subject: 'Admin Token Information',
     text: `Dear Admin,\n\nYour admin token is: ${adminToken}\n\nBest regards,\nThe Nebula Apparel Team`,
