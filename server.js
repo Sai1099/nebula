@@ -13,8 +13,11 @@ const paymentRoutes = require('./routes/payment');
 const bodyParser = require('body-parser');
 const fs = require('fs');
 const crypto = require('crypto');
-const csvImporterRouter = require('./routes/csv_imp'); // Adjust the path based on your project structure
-app.use('/csv-importer', csvImporterRouter);
+const csvImporterRouter = require('./routes/csv_imp'); 
+
+
+// Adjust the path based on your project structure
+
 
 
 // Assuming you have a middleware for authentication
@@ -300,7 +303,7 @@ app.get('/verify-email/:email/:token', async (req, res) => {
 
 // ... (Remaining code)
 
-
+app.use('/csv-importer', csvImporterRouter);
 app.get('/csv-importer', isAuthenticated, (req, res) => {
   res.redirect('/csv-importer/upload');
 });
