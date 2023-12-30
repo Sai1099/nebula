@@ -1,3 +1,5 @@
+
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const passport = require('passport');
@@ -11,6 +13,8 @@ const paymentRoutes = require('./routes/payment');
 const bodyParser = require('body-parser');
 const fs = require('fs');
 const crypto = require('crypto');
+
+
 // Assuming you have a middleware for authentication
 // Assuming you have a middleware for handling file uploads
 
@@ -19,8 +23,8 @@ const app = express();
 app.use(bodyParser.json());
 app.use('/api/payment', paymentRoutes);
 // Connect to MongoDB Atlas
-const mongoDBURI='mongodb+srv://sai:nebula123@cluster0.l9c5xyp.mongodb.net/?retryWrites=true&w=majority'
-mongoose.connect(mongoDBURI, { useNewUrlParser: true, useUnifiedTopology: true });
+
+mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
 
 
 
@@ -37,8 +41,8 @@ app.use(passport.session());
 
 
 passport.use(new GoogleStrategy({
-    clientID: '772787922-vhcqcla66i15hqduocfgb6c9jga9et09.apps.googleusercontent.com',
-    clientSecret: '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',
+    clientID:  process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     callbackURL: 'http://localhost:3000/auth/google/callback'
   },
   (accessToken, refreshToken, profile, done) => {
@@ -109,6 +113,7 @@ app.get('/auth/google/callback', passport.authenticate('google', { failureRedire
 
 
 
+
 app.get('/dashboard', isAuthenticated, (req, res) => {
   const user = req.user; // Assuming the user object is available in req.user after authentication
 
@@ -170,10 +175,13 @@ const upload = multer({ storage: storage });
           }
       
           // Fetch user information
+          
           const user = req.user;
           const userEmail = user.emails && user.emails.length > 0 ? user.emails[0].value : 'Unknown';
           const userName = user.username || 'Unknown';
       
+         
+          
           // Implement your verification logic here
           const letterPath = req.file.path;
       
