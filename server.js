@@ -34,7 +34,7 @@ mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTop
   
 
 // Passport setup
-app.use(session({ secret: '0499544725f45b3b3f2a00b498e26bb396cc936e1e3a6cc6dd495a59584cd29b', resave: true, saveUninitialized: true }));
+app.use(session({ secret: process.env.SESSION_SECRET, resave: true, saveUninitialized: true }));
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -189,8 +189,8 @@ const upload = multer({ storage: storage });
           const transporter = nodemailer.createTransport({
             service: 'gmail',
             auth: {
-              user: 'contact.nebulaapparel@gmail.com',
-              pass: 'pgfksxpluzffqifj', // Replace with your Gmail password or an App Password
+              user: process.env.GMAIL_USER,
+              pass: process.env.GMAIL_PASSWORD, // Replace with your Gmail password or an App Password
             },
           });
       
@@ -210,8 +210,8 @@ const upload = multer({ storage: storage });
           const verificationLink = `http://localhost:3000/verify-email/${userEmail}/${verificationToken}`;
       
           const mailOptions = {
-            from: 'contact.nebulaapparel@gmail.com',
-            to: 'contact.nebulaapparel@gmail.com',
+            from: process.env.GMAIL_USER,
+            to: process.env.GMAIL_USER,
             subject: `New Letter Uploaded - ${userName}`,
             text: `A new letter has been uploaded by ${userName} (${userEmail}). Please verify it by clicking the following link: ${verificationLink}`,
             attachments: [
@@ -266,13 +266,13 @@ app.get('/verify-email/:email/:token', async (req, res) => {
       const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
-          user: 'contact.nebulaapparel@gmail.com',
-          pass: 'pgfksxpluzffqifj', // Replace with your Gmail password or an App Password
+          user: process.env.GMAIL_USER,
+          pass: process.env.GMAIL_PASSWORD, // Replace with your Gmail password or an App Password
         },
       });
 
       const mailOptions = {
-        from: 'contact.nebulaapparel@gmail.com',
+        from: process.env.GMAIL_USER,
         to: user.email,
         subject: 'Account Verified Successfully',
         text: 'Your account has been successfully verified. You can now log in to access your dashboard.',
