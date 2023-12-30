@@ -10,7 +10,7 @@ const router = express.Router();
 const app = express();
 const Team = require('../models/Team.js');
 app.set('view engine', 'ejs');
-mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
+
 const isAuthenticated = require(path.join(__dirname, '..', 'middleware', 'isAuthenticated'));
 
 let records = [];

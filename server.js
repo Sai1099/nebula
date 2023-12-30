@@ -13,6 +13,8 @@ const paymentRoutes = require('./routes/payment');
 const bodyParser = require('body-parser');
 const fs = require('fs');
 const crypto = require('crypto');
+const csvImporterRouter = require('./routes/csv_imp'); // Adjust the path based on your project structure
+app.use('/csv-importer', csvImporterRouter);
 
 
 // Assuming you have a middleware for authentication
@@ -312,8 +314,7 @@ app.get('/dashboard', (req, res) => {
     res.status(404).render('404'); 
   }
 });
-const csvImporterRouter = require('./routes/csv_imp'); // Adjust the path based on your project structure
-app.use('/csv-importer', csvImporterRouter);
+
  
 
 // Start the server
